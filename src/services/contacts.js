@@ -1,4 +1,4 @@
-import ContactCollection from '../db/models/Contact.js';
+import ContactCollection from '../db/models/contact.js';
 import calculatePaginationData from '../utils/calculatePaginationData.js';
 import { SORT_ORDER } from '../constants/index.js';
 
