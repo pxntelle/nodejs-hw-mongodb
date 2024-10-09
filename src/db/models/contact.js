@@ -1,41 +1,59 @@
-import { model, Schema } from 'mongoose';
-import mongoose from 'mongoose';
+import mongoose, { model, Schema } from 'mongoose';
+import { contactTypes, phoneNumberRegexp } from '../../constants/contacts.js';
+import { handleSaveError, setUpdateOptions } from './hooks.js';
 
-const Contact = new Schema(
+const contactSchema = new Schema(
   {
     name: {
       type: String,
       required: true,
+      min: 3,
+      max: 30,
     },
     phoneNumber: {
       type: String,
       required: true,
+      match: phoneNumberRegexp,
     },
     email: {
       type: String,
-      required: false,
     },
     isFavourite: {
       type: Boolean,
-      required: true,
       default: false,
     },
     contactType: {
       type: String,
+      enum: contactTypes,
       required: true,
-      enum: ['work', 'home', 'personal'],
       default: 'personal',
     },
     userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
+      type: Schema.Types.ObjectId,
+      ref: 'user',
       required: true,
     },
   },
-  {
-    timestamps: true,
-    versionKey: false,
-  },
+  { versionKey: false, timestamps: true },
 );
 
-export const ContactsCollection = model('contacts', Contact);
+contactSchema.post('save', handleSaveError);
+
+contactSchema.pre('findOneAndUpdate', setUpdateOptions);
+
+contactSchema.post('findOneAndUpdate', handleSaveError);
+
+const ContactCollection =
+  mongoose.models.contact || model('contact', contactSchema);
+
+export const sortKeys = [
+  'name',
+  'phoneNumber',
+  'email',
+  'isFavourite',
+  'contactType',
+  'createdAt',
+  'updatedAt',
+];
+
+export default ContactCollection;
