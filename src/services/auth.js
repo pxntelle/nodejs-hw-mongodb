@@ -85,7 +85,7 @@ export const refreshSession = async ({ refreshToken, sessionId }) => {
   const sessionData = createSession();
 
   const userSession = await SessionsCollection.create({
-    userId: oldSession._id,
+    userId: oldSession.userId,
     ...sessionData,
   });
   return userSession;
