@@ -1,30 +1,31 @@
-import { registerUser } from '../services/auth.js';
-import { loginUser } from '../services/auth.js';
-import { logoutUser } from '../services/auth.js';
-import { THIRTY_DAYS } from '../constants/index.js';
-import { refreshUsersSession } from '../services/auth.js';
+import * as authServices from '../services/auth.js';
+import { requestResetToken, resetPassword } from '../services/auth.js';
 
-export const registerUserController = async (req, res) => {
-  const user = await registerUser(req.body);
+const setupSession = (res, session) => {
+  res.cookie('refreshToken', session.refreshToken, {
+    httpOnly: true,
+    expire: new Date(Date.now() + session.refreshTokenValidUntil),
+  });
 
-  res.json({
-    status: 201,
-    message: 'Successfully registered a user!',
-    data: user,
+  res.cookie('sessionId', session._id, {
+    httpOnly: true,
+    expire: new Date(Date.now() + session.refreshTokenValidUntil),
   });
 };
 
-export const loginUserController = async (req, res) => {
-  const session = await loginUser(req.body);
+export const registerController = async (req, res) => {
+  const newUser = await authServices.register(req.body);
+  res.status(201).json({
+    status: 201,
+    message: 'Successfully registered a user!',
+    data: newUser,
+  });
+};
 
-  res.cookie('refreshToken', session.refreshToken, {
-    httpOnly: true,
-    expires: new Date(Date.now() + THIRTY_DAYS),
-  });
-  res.cookie('sessionId', session._id, {
-    httpOnly: true,
-    expires: new Date(Date.now() + THIRTY_DAYS),
-  });
+export const loginController = async (req, res) => {
+  const session = await authServices.login(req.body);
+
+  setupSession(res, session);
 
   res.json({
     status: 200,
@@ -35,32 +36,11 @@ export const loginUserController = async (req, res) => {
   });
 };
 
-export const logoutUserController = async (req, res) => {
-  if (req.cookies.sessionId) {
-    await logoutUser(req.cookies.sessionId);
-  }
-
-  res.clearCookie('sessionId');
-  res.clearCookie('refreshToken');
-
-  res.status(204).send();
-};
-
-const setupSession = (res, session) => {
-  res.cookie('refreshToken', session.refreshToken, {
-    httpOnly: true,
-    expires: new Date(Date.now() + THIRTY_DAYS),
-  });
-  res.cookie('sessionId', session._id, {
-    httpOnly: true,
-    expires: new Date(Date.now() + THIRTY_DAYS),
-  });
-};
-
-export const refreshUserSessionController = async (req, res) => {
-  const session = await refreshUsersSession({
-    sessionId: req.cookies.sessionId,
-    refreshToken: req.cookies.refreshToken,
+export const refreshController = async (req, res) => {
+  const { refreshToken, sessionId } = req.cookies;
+  const session = await authServices.refreshSession({
+    refreshToken,
+    sessionId,
   });
 
   setupSession(res, session);
@@ -71,5 +51,35 @@ export const refreshUserSessionController = async (req, res) => {
     data: {
       accessToken: session.accessToken,
     },
+  });
+};
+
+export const logoutController = async (req, res) => {
+  const { sessionId } = req.cookies;
+  if (sessionId) {
+    await authServices.logout(sessionId);
+  }
+
+  res.clearCookie('sessionId');
+  res.clearCookie('refreshToken');
+
+  res.status(204).send();
+};
+
+export const sendResetEmailController = async (req, res) => {
+  await requestResetToken(req.body.email);
+  res.json({
+    status: 200,
+    message: 'Reset password email was successfully sent.',
+    data: {},
+  });
+};
+
+export const resetPasswordController = async (req, res) => {
+  await resetPassword(req.body);
+  res.json({
+    status: 200,
+    message: 'Password was successfully reset.',
+    data: {},
   });
 };
