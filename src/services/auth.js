@@ -14,6 +14,7 @@ import { sendEmail } from '../utils/sendEmail.js';
 import handlebars from 'handlebars';
 import path from 'node:path';
 import fs from 'node:fs/promises';
+import { validateCode } from '../utils/googleOAuth2.js';
 
 const createSession = () => {
   const accessToken = randomBytes(30).toString('base64');
@@ -61,6 +62,31 @@ export const login = async (payload) => {
 
   await SessionsCollection.deleteOne({ userId: user._id });
 
+  const sessionData = createSession();
+
+  const userSession = await SessionsCollection.create({
+    userId: user._id,
+    ...sessionData,
+  });
+  return userSession;
+};
+
+////////////////////////////// GOOGLE OAUTH //////////////////////////
+
+export const registerOrLoginWithGoogleOAuth = async (code) => {
+  const loginTicket = await validateCode(code);
+  const payload = loginTicket.getPayload();
+  let user = await UsersCollection.findOne({ email: payload.email });
+  if (!user) {
+    const password = randomBytes(10);
+    const hashPassword = await bcrypt.hash(password, 10);
+    user = await UsersCollection.create({
+      name: payload.name,
+      email: payload.email,
+      password: hashPassword,
+    });
+    delete user._doc.password;
+  }
   const sessionData = createSession();
 
   const userSession = await SessionsCollection.create({
