@@ -42,7 +42,9 @@ requestBody:
             example: 'home'
           photo:
             description: "File of the contact's photo"
+            type: string
             format: binary
+            example: 'https://res.cloudinary.com/dpm5rrtxp/image/upload/v1728788643/photos/m3hzyhdgjx1nskvrirpv.jpg'
 responses:
   '200':
     description: The contact info has been updated

@@ -239,7 +239,9 @@
                   },
                   "photo": {
                     "description": "File of the contact's photo",
-                    "format": "binary"
+                    "type": "string",
+                    "format": "binary",
+                    "example": "https://res.cloudinary.com/dpm5rrtxp/image/upload/v1728788643/photos/m3hzyhdgjx1nskvrirpv.jpg"
                   }
                 }
               }
@@ -406,7 +408,9 @@
                   },
                   "photo": {
                     "description": "File of the contact's photo",
-                    "format": "binary"
+                    "type": "string",
+                    "format": "binary",
+                    "example": "https://res.cloudinary.com/dpm5rrtxp/image/upload/v1728788643/photos/m3hzyhdgjx1nskvrirpv.jpg"
                   }
                 }
               }
