@@ -12,10 +12,7 @@ const contactsRouter = Router();
 
 contactsRouter.use(authenticate);
 
-contactsRouter.get(
-  '/',
-  ctrlWrapper(contactControllers.getAllContactsController),
-);
+contactsRouter.get('/', ctrlWrapper(contactControllers.getContactsController));
 
 contactsRouter.get(
   '/:id',

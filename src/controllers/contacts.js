@@ -10,7 +10,7 @@ import { env } from '../utils/env.js';
 
 const enableCloudinary = env('ENABLE_CLOUDINARY');
 
-export const getAllContactsController = async (req, res) => {
+export const getContactsController = async (req, res) => {
   const { perPage, page } = parsePaginationParams(req.query);
   const { sortBy, sortOrder } = parseSortParams({ ...req.query, sortKeys });
   const filter = parseFilterParams(req.query);
